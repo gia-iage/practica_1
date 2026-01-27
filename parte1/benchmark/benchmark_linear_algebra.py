@@ -89,6 +89,44 @@ if args.device == "gpu":
 # Utilidades
 # ==================================================
 
+def get_cpu_model():
+    model = "Unknown_CPU"
+    try:
+        with open("/proc/cpuinfo", "r") as f:
+            for line in f:
+                if "model name" in line:
+                    model = line.split(":")[1].strip()
+                    break
+    except FileNotFoundError:
+        pass
+    return model
+
+def sanitize_cpu_name(cpu_name):
+    """
+    Convierte por ejemplo:
+    'Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz'
+    en:
+    'Intel_Xeon_Silver_4216'
+    """
+    # Quitar marcas registradas
+    cpu_name = cpu_name.replace("(R)", "")
+    cpu_name = cpu_name.replace("(TM)", "")
+
+    # Quitar palabras irrelevantes
+    cpu_name = cpu_name.replace("CPU", "")
+    
+    # Quitar frecuencia (@ 2.10GHz)
+    if "@" in cpu_name:
+        cpu_name = cpu_name.split("@")[0]
+
+    # Limpiar espacios múltiples
+    cpu_name = " ".join(cpu_name.split())
+
+    # Sustituir espacios por _
+    cpu_name = cpu_name.replace(" ", "_")
+
+    return cpu_name
+
 def sync(device):
     if device.type == "cuda":
         torch.cuda.synchronize()
@@ -158,13 +196,17 @@ def main():
         if not torch.cuda.is_available():
             raise RuntimeError("CUDA no está disponible en este sistema")
         device = torch.device("cuda")
-        label = f"gpu_cuda_{args.dtype}"
-        label_pretty = "GPU (CUDA)"
+        gpu_name = torch.cuda.get_device_name(0)
+        gpu_name_sanitized = gpu_name.replace(" ", "_")
+        label = f"gpu_{gpu_name_sanitized}_{args.dtype}"
+        label_pretty = f"GPU {gpu_name_sanitized} (CUDA)"
     else:
         device = torch.device("cpu")
-        label = f"cpu_{CPU_THREADS}T_{args.dtype}"
+        cpu_name = get_cpu_model()
+        cpu_name_sanitized = sanitize_cpu_name (cpu_name)
+        label = f"cpu_{cpu_name_sanitized}_{CPU_THREADS}T_{args.dtype}"
         label_pretty = (
-            f"CPU ({CPU_THREADS} thread/s)"
+            f"CPU {cpu_name_sanitized} ({CPU_THREADS} thread/s)"
         )
         
     output_csv = f"benchmark_{label}.csv"
