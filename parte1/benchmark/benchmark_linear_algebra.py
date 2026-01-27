@@ -8,7 +8,7 @@ import csv
 # Parámetros globales
 # ==================================================
 
-WARMUP_ITERS = 10
+WARMUP_ITERS = 5
 MEASURE_ITERS = 50
 
 # ==================================================
