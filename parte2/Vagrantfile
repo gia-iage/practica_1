@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+require_relative 'provisioning/vbox.rb'
+VBoxUtils.check_version('7.2.4')
+Vagrant.require_version ">= 2.4.9"
+
+# Modifica la variable STUDENT_PREFIX para sustituir "X" por tu prefijo
+# Ejemplo, el alumno Roberto Rey Expósito, que hace la práctica en el curso
+# 25/26, utilizará el siguiente prefijo: rre2526
+STUDENT_PREFIX="X"
+
+# VM resources
+CPU_CORES=2
+MEMORY=2048
+
+Vagrant.configure("2") do |config|
+  # VM hostname
+  config.vm.hostname = STUDENT_PREFIX
+  # Debian Linux box
+  config.vm.box = "rreye/debian-13"
+  config.vm.box_version = "20260113"
+  config.vm.box_check_update = false
+  config.vm.synced_folder ".", "/vagrant"
+
+  config.vm.provider "virtualbox" do |vb|
+  	vb.name = "IAGE-P1-#{config.vm.hostname}"
+	  vb.gui = false
+	  vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
+	  # Customize the amount of CPU and memory on the VM
+	  vb.cpus = CPU_CORES
+	  vb.memory = MEMORY
+  end
+  
+  # Provisioning through external shell scripts
+  config.vm.provision "bootstrap", type: "shell", run: "always", path: "provisioning/bootstrap.sh"
+end
