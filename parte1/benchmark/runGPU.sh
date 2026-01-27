@@ -2,7 +2,7 @@
 #
 #SBATCH --job-name=job
 #SBATCH --output=%x_%j.out
-#SBATCH -t 00:05:00
+#SBATCH -t 00:03:00
 #SBATCH -N 1	#Number of nodes
 #SBATCH --exclusive
 #SBATCH --gres=gpu:T4:1
