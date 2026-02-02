@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
   config.vm.synced_folder ".", "/vagrant"
 
   config.vm.provider "virtualbox" do |vb|
-  	vb.name = "IAGE-P1-#{config.vm.hostname}"
+  	vb.name = "IAGE-#{config.vm.hostname}"
 	  vb.gui = false
 	  vb.customize ["modifyvm", :id, "--graphicscontroller", "vmsvga"]
 	  # Customize the amount of CPU and memory on the VM
